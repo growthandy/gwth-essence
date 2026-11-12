@@ -21,6 +21,19 @@ check_skeleton() {
 	[[ -f .gitignore ]] && grep -q 'workspace.json' .gitignore && ok ".gitignore ignores workspace.json" || fail ".gitignore missing workspace.json"
 }
 
+check_system_files() {
+	for f in MANIFESTO.md CLAUDE.md AGENTS.md; do [[ -f "$f" ]] && ok "$f" || fail "missing $f"; done
+	[[ -f CLAUDE.md ]] || return 0
+	[[ "$(grep -c '^@' CLAUDE.md)" == "0" ]] && ok "no @import in CLAUDE.md" || fail "CLAUDE.md has @ lines"
+	grep -qF "A real person whose ideas don't always cascade in the logical, sequential style served up by AI." MANIFESTO.md && ok "manifesto sentence" || fail "manifesto sentence missing"
+	for kw in '[!ai]' 'explored' '리버스 프롬프팅' '30일'; do grep -qF "$kw" CLAUDE.md && ok "CLAUDE.md has $kw" || fail "CLAUDE.md lacks $kw"; done
+	for h in '## 철학 (요약)' '## 규칙 8' '## 폴더' '## 커맨드' '## 긴 규칙은 99.Meta/rules/ 를 Read'; do grep -qF "$h" CLAUDE.md && ok "section $h" || fail "CLAUDE.md lacks section $h"; done
+	if diff -q <(sed '1,/^# /d' CLAUDE.md) <(sed '1,/^# /d' AGENTS.md) >/dev/null; then ok "CLAUDE/AGENTS bodies identical"; else fail "CLAUDE/AGENTS bodies differ"; fi
+	for r in frontmatter wikilink blank-line human-ai-layers growth-path; do
+		[[ -f "99.Meta/rules/$r.md" ]] && ok "rule $r" || fail "missing rule 99.Meta/rules/$r.md"
+	done
+}
+
 for fn in $(declare -F | awk '{print $3}' | grep '^check_'); do
 	echo "== $fn"; "$fn"
 done
