@@ -139,6 +139,26 @@ check_split() {
 	rm -rf "$(dirname "$t")"
 }
 
+check_readme() {
+	local heads; heads=$(grep -E '^## ' README.md | sed 's/^## //' | tr '\n' '|')
+	[[ "$heads" == "이 볼트는|시작하기|왜 옵시디언을 쓰나요? — 온보딩 3문항|60분 걸어보기|준비된 사람용 — AI 층|플러그인과 테마|AI 없이 쓰는 프롬프트|출처|" ]] && ok "README sections" || fail "README sections wrong: $heads"
+	local missing=0 pth; while IFS= read -r pth; do [[ -e "$pth" ]] || { fail "README links to missing $pth"; missing=1; }; done < <(grep -oE '(99\.Meta/[^) `]+\.md|MANIFESTO\.md)' README.md | sort -u)
+	[[ $missing -eq 0 ]] && ok "README paths exist"
+	for kw in 'Things 2' 'Git for Windows' 'Smart Connections' 'cmds-llm-wiki' 'YohanKoo' 'git clone'; do grep -qF "$kw" README.md && ok "README has $kw" || fail "README lacks $kw"; done
+}
+
+check_clone() {
+	(( FULL )) || { ok "clone test skipped (run with --full)"; return 0; }
+	local d; d="$(mktemp -d)/clone"
+	git clone --quiet "$PWD" "$d" >/dev/null 2>&1 || { fail "git clone failed"; return 0; }
+	( cd "$d" && bash 99.Meta/scripts/check.sh >/dev/null 2>&1 ) && ok "clone passes check.sh" || fail "clone fails check.sh"
+	[[ -z "$(find "$d" -path "$d/.git" -prune -o -type l -print)" ]] && ok "clone has no symlinks" || fail "clone has symlinks"
+	[[ "$(cd "$d" && git ls-files | grep -c workspace.json)" == "0" ]] && ok "clone has no workspace.json" || fail "workspace.json tracked"
+	local n; n=$(cd "$d" && git ls-files | wc -l | tr -d ' ')
+	[[ "$n" -le 1500 ]] && ok "clone tracks $n files (≤1500)" || fail "clone tracks $n files — something large slipped in"
+	rm -rf "$(dirname "$d")"
+}
+
 for fn in $(declare -F | awk '{print $3}' | grep '^check_'); do
 	echo "== $fn"; "$fn"
 done
