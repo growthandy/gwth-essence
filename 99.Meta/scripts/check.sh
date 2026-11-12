@@ -102,6 +102,28 @@ check_commands() {
 	fi
 }
 
+KIT_CMDS="ingest query lint verify status reindex refresh-context inbox capture-tabs audit"
+check_kit() {
+	[[ -f 50.Wiki/CLAUDE.md ]] || { fail "missing 50.Wiki/CLAUDE.md"; return 0; }
+	grep -q 'cmds-llm-wiki' 50.Wiki/CLAUDE.md && grep -q 'v1.13.0' 50.Wiki/CLAUDE.md && ok "kit attribution" || fail "50.Wiki/CLAUDE.md lacks attribution/version"
+	local stray; stray=$(find 50.Wiki -maxdepth 3 \( -name .claude -o -name .codex -o -name .agents -o -name '94. Agent Settings' -o -name 'setup-agent-links.*' \) -print)
+	[[ -z "$stray" ]] && ok "no kit dotfolders under 50.Wiki" || fail "stray kit harness under 50.Wiki: $stray"
+	local c; for c in $KIT_CMDS; do
+		local f=".claude/commands/$c.md"; [[ -f "$f" ]] || { fail "missing kit command $f"; continue; }
+		local bare; bare=$(grep -nE '(00\. Inbox|10\. Raw Sources|20\. Wiki|30\. Queries|40\. Paper Analyses|70\. Outputs|80\. References|90\. Settings)/' "$f" | grep -v '50\.Wiki/' || true)
+		[[ -z "$bare" ]] && ok "kit command $c paths prefixed" || fail "kit command $c has unprefixed paths: $(echo "$bare" | head -2 | tr '\n' ' ')"
+	done
+	local h; for h in qmd-reindex.sh validate-raw-source.sh; do
+		[[ -f ".claude/hooks/$h" ]] || { fail "missing hook $h"; continue; }
+		local sample; sample=$(find "50.Wiki/10. Raw Sources" -name '*.md' | head -1)
+		local payload; payload=$(printf '{"tool_input":{"file_path":"%s"}}' "$PWD/${sample:-50.Wiki/10. Raw Sources/x.md}")
+		if echo "$payload" | env -i HOME="$HOME" PATH=/usr/bin:/bin CLAUDE_PROJECT_DIR="$PWD" /bin/bash ".claude/hooks/$h" >/dev/null 2>&1; then ok "hook $h exits 0 without qmd/python3"; else fail "hook $h fails without qmd/python3"; fi
+	done
+	python3 -I -m json.tool .claude/settings.json >/dev/null 2>&1 && grep -q '\\"$CLAUDE_PROJECT_DIR\\"/' .claude/settings.json && ok "settings.json hooks quoted" || fail "settings.json invalid or unquoted CLAUDE_PROJECT_DIR"
+	[[ -f 99.Meta/KIT-CHANGES.md ]] && ok "KIT-CHANGES.md" || fail "missing 99.Meta/KIT-CHANGES.md"
+	grep -q '🏛 나' "50.Wiki/Core Context.md" 2>/dev/null && ok "Core Context points to 🏛 나" || fail "50.Wiki/Core Context.md does not point to 🏛 나.md"
+}
+
 for fn in $(declare -F | awk '{print $3}' | grep '^check_'); do
 	echo "== $fn"; "$fn"
 done
