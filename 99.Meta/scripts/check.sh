@@ -124,6 +124,21 @@ check_kit() {
 	grep -q '🏛 나' "50.Wiki/Core Context.md" 2>/dev/null && ok "Core Context points to 🏛 나" || fail "50.Wiki/Core Context.md does not point to 🏛 나.md"
 }
 
+check_split() {
+	[[ -f 99.Meta/scripts/split-wiki.sh ]] || { fail "missing split-wiki.sh"; return 0; }
+	[[ -f 99.Meta/scripts/split-wiki.ps1 ]] && [[ "$(grep -c 'Copy-Item' 99.Meta/scripts/split-wiki.ps1)" -ge 1 ]] && ok "split-wiki.ps1" || fail "split-wiki.ps1 missing or lacks Copy-Item"
+	grep -q '| 5 ' 99.Meta/rules/growth-path.md && grep -q '위성' 99.Meta/rules/growth-path.md && ok "growth-path table" || fail "growth-path.md lacks the 6-stage table"
+	local t; t="$(mktemp -d)/wiki-test"
+	if bash 99.Meta/scripts/split-wiki.sh "$t" >/dev/null 2>&1; then ok "split-wiki ran"; else fail "split-wiki failed"; return 0; fi
+	[[ -f "$t/CLAUDE.md" ]] && ok "split target has CLAUDE.md" || fail "split target lacks CLAUDE.md"
+	[[ -f "$t/.claude/commands/ingest.md" ]] && [[ "$(grep -c '50\.Wiki/' "$t/.claude/commands/ingest.md")" == "0" ]] && ok "split commands unprefixed" || fail "split target ingest.md missing or still prefixed"
+	[[ -f "$t/.claude/settings.json" ]] && ok "split target settings.json" || fail "split target lacks settings.json"
+	[[ -f "$t/Core Context.md" ]] && grep -q 'obsidian://' "$t/Core Context.md" && ok "split reverse link" || fail "split target Core Context lacks obsidian:// link"
+	[[ -z "$(git status --porcelain -- 50.Wiki .claude)" ]] && ok "source repo untouched by split" || fail "split modified source repo"
+	bash 99.Meta/scripts/split-wiki.sh "$t" >/dev/null 2>&1 && fail "second split run should refuse" || ok "second split run refused"
+	rm -rf "$(dirname "$t")"
+}
+
 for fn in $(declare -F | awk '{print $3}' | grep '^check_'); do
 	echo "== $fn"; "$fn"
 done
