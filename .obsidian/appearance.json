@@ -1,0 +1,8 @@
+{
+  "cssTheme": "Velocity",
+  "enabledCssSnippets": [
+    "gwth-velocity"
+  ],
+  "accentColor": "#6b8815",
+  "theme": "obsidian"
+}

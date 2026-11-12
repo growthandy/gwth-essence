@@ -52,6 +52,24 @@ check_templates() {
 	[[ -f 00.Inbox/README.md ]] && grep -q '일주일에 한 번' 00.Inbox/README.md && ok "Inbox README" || fail "Inbox README missing or lacks rule"
 }
 
+PLUGIN_IDS="omnisearch realclaudian obsidian-excalidraw-plugin notebook-navigator obsidian-style-settings templater-obsidian periodic-notes calendar quickadd smart-connections obsidian42-strange-new-worlds obsidian-advanced-uri"
+check_obsidian() {
+	[[ -d .obsidian ]] || { fail "missing .obsidian/"; return 0; }
+	local want; want=$(for id in $PLUGIN_IDS; do [[ "$id" != realclaudian ]] && echo "$id"; done | sort)
+	local have; have=$(python3 -I -c 'import json;print("\n".join(sorted(json.load(open(".obsidian/community-plugins.json")))))' 2>/dev/null)
+	[[ "$have" == "$want" ]] && ok "community-plugins = 11 enabled ids" || fail "community-plugins.json differs from expected set (realclaudian must be disabled)"
+	for id in $PLUGIN_IDS; do [[ -f ".obsidian/plugins/$id/manifest.json" && -f ".obsidian/plugins/$id/main.js" ]] && ok "plugin $id" || fail "plugin $id missing manifest/main"; done
+	[[ -f .obsidian/workspace.json ]] && fail "workspace.json must not exist" || ok "no workspace.json"
+	grep -q '"cssTheme": "Velocity"' .obsidian/appearance.json 2>/dev/null && [[ -f .obsidian/themes/Velocity/theme.css ]] && ok "Velocity theme" || fail "Velocity theme not set/present"
+	grep -q 'data-callout="ai"' .obsidian/snippets/gwth-velocity.css 2>/dev/null && ok "ai callout style" || fail "snippet lacks ai callout style"
+	local leak; leak=$(grep -ril 'Growth_Bridge\|영민\|/Users/young' .obsidian/snippets .obsidian/plugins/*/data.json .obsidian/*.json 2>/dev/null || true)
+	[[ -z "$leak" ]] && ok "no personal identifiers in .obsidian" || fail "personal identifiers: $leak"
+	grep -q '"bases"' .obsidian/core-plugins.json 2>/dev/null && ok "core bases on" || fail "core-plugins lacks bases"
+	[[ -f 99.Meta/LICENSES.md ]] || { fail "missing 99.Meta/LICENSES.md"; return 0; }
+	for id in $PLUGIN_IDS Velocity cmds-llm-wiki; do grep -q "$id" 99.Meta/LICENSES.md && ok "license row $id" || fail "LICENSES.md lacks $id"; done
+	grep -qi 'TODO' 99.Meta/LICENSES.md && fail "LICENSES.md has TODO" || ok "LICENSES.md complete"
+}
+
 for fn in $(declare -F | awk '{print $3}' | grep '^check_'); do
 	echo "== $fn"; "$fn"
 done

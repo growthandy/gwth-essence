@@ -1,0 +1,26 @@
+{
+  "showGettingStartedBanner": false,
+  "hasMigratedDailyNoteSettings": true,
+  "hasMigratedWeeklyNoteSettings": true,
+  "daily": {
+    "folder": "02.Daily",
+    "template": "99.Meta/templates/데일리.md",
+    "enabled": true,
+    "format": "YYYY-MM-DD"
+  },
+  "weekly": {
+    "folder": "02.Daily",
+    "template": "99.Meta/templates/위클리.md",
+    "enabled": true,
+    "format": "YYYY-[W]ww"
+  },
+  "monthly": {
+    "enabled": false
+  },
+  "quarterly": {
+    "enabled": false
+  },
+  "yearly": {
+    "enabled": false
+  }
+}

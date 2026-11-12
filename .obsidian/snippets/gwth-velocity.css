@@ -1,0 +1,48 @@
+:root {
+    --h1-color: #7dd3fc;
+    --h2-color: #a78bfa;
+    --h3-color: #e879f9;
+    --h4-color: #34d399;
+    --h5-color: #facc15;
+    --h6-color: #60a5fa;
+  }
+  
+  [data-type="outline"] {
+    /* h1 */
+    .tree-item > .tree-item-self {
+      color: var(--h1-color);
+    }
+  
+    /* h2 */
+    .tree-item .tree-item > .tree-item-self {
+      color: var(--h2-color);
+    }
+  
+    /* h3 */
+    .tree-item .tree-item .tree-item > .tree-item-self {
+      color: var(--h3-color);
+    }
+  
+    /* h4 */
+    .tree-item .tree-item .tree-item .tree-item > .tree-item-self {
+      color: var(--h4-color);
+    }
+  
+    /* h5 */
+    .tree-item .tree-item .tree-item .tree-item .tree-item > .tree-item-self {
+      color: var(--h5-color);
+    }
+  
+    /* h6 */
+    .tree-item .tree-item .tree-item .tree-item .tree-item .tree-item > .tree-item-self {
+      color: var(--h6-color);
+    }
+  }
+/* GWTH Essence — AI 콜아웃: AI 는 사람 층에서 이 상자로만 말한다 (99.Meta/rules/human-ai-layers.md) */
+.callout[data-callout="ai"] {
+	--callout-color: 122, 90, 200;
+	--callout-icon: lucide-bot;
+	border-left: 3px solid rgb(var(--callout-color));
+	background: rgba(var(--callout-color), 0.06);
+}
+.callout[data-callout="ai"] .callout-title { font-weight: 600; }

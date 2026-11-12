@@ -1,0 +1,9 @@
+{
+  "attachmentFolderPath": "99.Meta/attachments",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "01.Fleeting",
+  "useMarkdownLinks": false,
+  "showUnsupportedFiles": false,
+  "promptDelete": true,
+  "alwaysUpdateLinks": true
+}
