@@ -34,6 +34,24 @@ check_system_files() {
 	done
 }
 
+fm_block() { awk 'NR==1 && $0!="---"{exit} NR==1{next} /^---$/{exit} {print}' "$1"; }
+yaml_ok() { fm_block "$1" | sed -E 's/<%[^%]*%>/X/g' | ruby -ryaml -rdate -e 'YAML.safe_load(STDIN.read, permitted_classes: [Date]) or exit 1' >/dev/null 2>&1; }
+check_templates() {
+	local t; for t in 나 씨앗 데일리 위클리 프로젝트 취향; do
+		local f="99.Meta/templates/$t.md"
+		[[ -f "$f" ]] || { fail "missing template $f"; continue; }
+		yaml_ok "$f" && ok "template $t yaml" || fail "template $t yaml broken"
+		grep -qE '^description: "' "$f" && ok "template $t description quoted" || fail "template $t description not quoted"
+		grep -qE '^type: (me|seed|note|daily|weekly|project|taste)$' "$f" && ok "template $t type" || fail "template $t type not in allowed set"
+		grep -qE 'move file|GWTH:' "$f" && fail "template $t carries mothership-only keys" || ok "template $t no mothership keys"
+	done
+	[[ -f 99.Meta/templates/위클리.md ]] && grep -qF '[!ai]' 99.Meta/templates/위클리.md && grep -qF '질문 3개' 99.Meta/templates/위클리.md && ok "weekly has [!ai] 질문 3개" || fail "weekly lacks [!ai] 질문 3개"
+	local me="0.Map_of_Contents/🏛 나.md"
+	[[ -f "$me" ]] || { fail "missing $me"; return 0; }
+	for h in '누구인가' '무엇을 하는가' '지금 국면' '취향' '금지어'; do grep -q "^## .*$h" "$me" && ok "나.md heading $h" || fail "나.md lacks heading $h"; done
+	[[ -f 00.Inbox/README.md ]] && grep -q '일주일에 한 번' 00.Inbox/README.md && ok "Inbox README" || fail "Inbox README missing or lacks rule"
+}
+
 for fn in $(declare -F | awk '{print $3}' | grep '^check_'); do
 	echo "== $fn"; "$fn"
 done
