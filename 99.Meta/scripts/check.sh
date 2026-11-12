@@ -60,7 +60,7 @@ check_obsidian() {
 	local have; have=$(python3 -I -c 'import json;print("\n".join(sorted(json.load(open(".obsidian/community-plugins.json")))))' 2>/dev/null)
 	[[ "$have" == "$want" ]] && ok "community-plugins = 11 enabled ids" || fail "community-plugins.json differs from expected set (realclaudian must be disabled)"
 	for id in $PLUGIN_IDS; do [[ -f ".obsidian/plugins/$id/manifest.json" && -f ".obsidian/plugins/$id/main.js" ]] && ok "plugin $id" || fail "plugin $id missing manifest/main"; done
-	[[ -f .obsidian/workspace.json ]] && fail "workspace.json must not exist" || ok "no workspace.json"
+	git ls-files --error-unmatch .obsidian/workspace.json >/dev/null 2>&1 && fail "workspace.json is tracked (must stay ignored)" || ok "workspace.json not tracked"
 	grep -q '"cssTheme": "Velocity"' .obsidian/appearance.json 2>/dev/null && [[ -f .obsidian/themes/Velocity/theme.css ]] && ok "Velocity theme" || fail "Velocity theme not set/present"
 	grep -q 'data-callout="ai"' .obsidian/snippets/gwth-velocity.css 2>/dev/null && ok "ai callout style" || fail "snippet lacks ai callout style"
 	local leak; leak=$(grep -ril 'Growth_Bridge\|영민\|/Users/young' .obsidian/snippets .obsidian/plugins/*/data.json .obsidian/*.json 2>/dev/null || true)
