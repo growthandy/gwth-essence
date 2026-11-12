@@ -1,0 +1,52 @@
+filters:
+  and:
+    - file.ext == "md"
+    - or:
+        - file.inFolder("01.Fleeting")
+        - file.inFolder("03.Notes")
+formulas:
+  links: file.links.length + file.backlinks.length
+  kind: if(type == "note", "🌿 자란 노트", if(type == "taste", "💛 취향", "🌱 씨앗"))
+properties:
+  file.name:
+    displayName: 노트
+  formula.kind:
+    displayName: 종류
+  formula.links:
+    displayName: 연결 수
+  note.created:
+    displayName: 생성일
+  note.tags:
+    displayName: 태그
+views:
+  - type: table
+    name: 🌱 자라는 씨앗
+    order:
+      - file.name
+      - formula.kind
+      - formula.links
+      - note.created
+      - note.tags
+    sort:
+      - property: formula.links
+        direction: DESC
+      - property: note.created
+        direction: DESC
+  - type: table
+    name: 📝 제목만 있는 씨앗
+    filters:
+      and:
+        - type == "seed"
+        - file.size < 400
+    order:
+      - file.name
+      - note.created
+    sort:
+      - property: note.created
+        direction: DESC
+  - type: cards
+    name: 🃏 카드로 보기
+    order:
+      - file.name
+      - formula.kind
+      - note.tags

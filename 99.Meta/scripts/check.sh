@@ -70,6 +70,24 @@ check_obsidian() {
 	grep -qi 'TODO' 99.Meta/LICENSES.md && fail "LICENSES.md has TODO" || ok "LICENSES.md complete"
 }
 
+check_profiles() {
+	local name; for name in daily projects knowledge ai; do
+		local wantf; case "$name" in daily) wantf="02.Daily";; projects) wantf="10.Projects 20.Areas 30.Resources 40.Archives";; knowledge) wantf="03.Notes";; ai) wantf="50.Wiki";; esac
+		local f="99.Meta/profiles/$name.md"; [[ -f "$f" ]] || { fail "missing profile $f"; continue; }
+		local heads; heads=$(grep -E '^## ' "$f" | sed 's/^## //' | tr '\n' '|')
+		[[ "$heads" == "목적|더해지는 폴더|템플릿·설정|MOC 골격|손으로 적용하는 법|"* ]] && ok "profile $name sections" || fail "profile $name sections wrong: $heads"
+		local folders; folders=$(awk '/^## 더해지는 폴더/{f=1;next} /^## /{f=0} f && /^- `/{gsub(/[-` ]/,""); print}' "$f" | tr '\n' ' ' | sed 's/ $//')
+		[[ "$folders" == "$wantf" ]] && ok "profile $name folders" || fail "profile $name folders '$folders' != '$wantf'"
+		local moc; moc=$(grep -oE '\[\[moc-[^]|]+' "$f" | head -1 | sed 's/\[\[//')
+		[[ -n "$moc" && -f "99.Meta/templates/$moc.md" ]] && ok "profile $name moc template $moc" || fail "profile $name MOC 골격 link missing or template absent ($moc)"
+	done
+	grep -q '사전 준비' 99.Meta/profiles/ai.md 2>/dev/null && grep -q 'realclaudian' 99.Meta/profiles/ai.md && ok "ai profile prerequisites" || fail "ai profile lacks 사전 준비 / realclaudian"
+	local b; for b in '자라는 씨앗' '최근 연결'; do
+		local bf="99.Meta/bases/$b.base"
+		[[ -f "$bf" ]] && ruby -ryaml -e 'YAML.safe_load(File.read(ARGV[0]))' "$bf" >/dev/null 2>&1 && grep -q '^views:' "$bf" && ok "base $b" || fail "base $b missing/invalid"
+	done
+}
+
 for fn in $(declare -F | awk '{print $3}' | grep '^check_'); do
 	echo "== $fn"; "$fn"
 done

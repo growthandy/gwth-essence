@@ -1,0 +1,45 @@
+filters:
+  and:
+    - file.ext == "md"
+    - "!file.inFolder(\"99.Meta\")"
+    - "!file.inFolder(\"50.Wiki\")"
+    - file.mtime >= now() - "7d"
+formulas:
+  backlinks: file.backlinks.length
+  outlinks: file.links.length
+properties:
+  file.name:
+    displayName: 노트
+  formula.backlinks:
+    displayName: 들어오는 링크
+  formula.outlinks:
+    displayName: 나가는 링크
+  file.mtime:
+    displayName: 마지막 수정
+  file.folder:
+    displayName: 폴더
+views:
+  - type: table
+    name: 🔗 최근 7일
+    order:
+      - file.name
+      - file.folder
+      - formula.backlinks
+      - formula.outlinks
+      - file.mtime
+    sort:
+      - property: file.mtime
+        direction: DESC
+  - type: table
+    name: 🏝️ 연결 없는 노트
+    filters:
+      and:
+        - file.links.length == 0
+        - file.backlinks.length == 0
+    order:
+      - file.name
+      - file.folder
+      - file.mtime
+    sort:
+      - property: file.mtime
+        direction: DESC
