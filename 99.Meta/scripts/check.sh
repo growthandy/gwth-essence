@@ -88,6 +88,20 @@ check_profiles() {
 	done
 }
 
+check_commands() {
+	local c; for c in onboard map weekly seeds; do
+		local f=".claude/commands/$c.md"; [[ -f "$f" ]] || { fail "missing command $f"; continue; }
+		grep -qE '^description: "' "$f" && ok "command $c description quoted" || fail "command $c description not quoted"
+	done
+	[[ -f .claude/commands/onboard.md ]] && for kw in '99.Meta/profiles' '덮어쓰지' '비어 있을 때만'; do grep -qF "$kw" .claude/commands/onboard.md && ok "onboard has $kw" || fail "onboard lacks $kw"; done
+	[[ -f .claude/commands/weekly.md ]] && for kw in '말하지 않은 전제' '끊긴 논리' '감정만' '판단 없는' '모순' '답은 손으로'; do grep -qF "$kw" .claude/commands/weekly.md && ok "weekly has $kw" || fail "weekly lacks $kw"; done
+	[[ -f .claude/commands/map.md ]] && grep -qF '승인' .claude/commands/map.md && ok "map has 승인" || fail "map lacks 승인"
+	if [[ -f .claude/commands/seeds.md ]]; then
+		[[ "$(wc -l < .claude/commands/seeds.md)" -le 40 ]] && ok "seeds ≤ 40 lines" || fail "seeds.md longer than 40 lines"
+		grep -qF '이동·삭제는 하지 않는다' .claude/commands/seeds.md && ok "seeds no-move rule" || fail "seeds lacks 이동·삭제는 하지 않는다"
+	fi
+}
+
 for fn in $(declare -F | awk '{print $3}' | grep '^check_'); do
 	echo "== $fn"; "$fn"
 done

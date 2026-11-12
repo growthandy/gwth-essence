@@ -3,7 +3,7 @@
 ## 목적
 손으로 쓴 씨앗을 AI 가 조사·확장해 위키로 쌓고, 그 위키를 사람이 읽어 다시 글로 돌아오는 **선순환**을 돌리고 싶은 사람. AI 층은 `50.Wiki/` 한 폴더이고, 안의 규칙은 CMDS LLM Wiki 킷(cmds-llm-wiki v1.13.0)을 그대로 쓴다.
 
-## 사전 준비
+### 사전 준비
 - **Claude Code CLI** 와 Anthropic 구독(또는 API 키) — 없으면 이 프로파일은 동작하지 않는다. 나머지 볼트는 이것 없이도 전부 쓸 수 있다.
 - Claudian 플러그인을 켠다: 설정 → 커뮤니티 플러그인 → **Claudian**(`realclaudian`) 활성화. 설치는 돼 있고 꺼져 있다.
 - Windows: Claude Code 가 요구하는 **Git for Windows**(Git Bash). 훅은 bash 로 돈다.
