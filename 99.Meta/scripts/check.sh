@@ -142,7 +142,7 @@ check_split() {
 check_readme() {
 	local heads; heads=$(grep -E '^## ' README.md | sed 's/^## //' | tr '\n' '|')
 	[[ "$heads" == "이 볼트는|시작하기|왜 옵시디언을 쓰나요? — 온보딩 3문항|60분 걸어보기|준비된 사람용 — AI 층|플러그인과 테마|AI 없이 쓰는 프롬프트|출처|" ]] && ok "README sections" || fail "README sections wrong: $heads"
-	local missing=0 pth; while IFS= read -r pth; do [[ -e "$pth" ]] || { fail "README links to missing $pth"; missing=1; }; done < <(grep -oE '(99\.Meta/[^) `]+\.md|MANIFESTO\.md)' README.md | sort -u)
+	local missing=0 pth; while IFS= read -r pth; do [[ -e "$pth" ]] || { fail "README links to missing $pth"; missing=1; }; done < <(grep -oE '(99\.Meta/[^) `\]]+\.md|MANIFESTO\.md)' README.md | sort -u)
 	[[ $missing -eq 0 ]] && ok "README paths exist"
 	for kw in 'Things 2' 'Git for Windows' 'Smart Connections' 'cmds-llm-wiki' 'YohanKoo' 'git clone'; do grep -qF "$kw" README.md && ok "README has $kw" || fail "README lacks $kw"; done
 }
