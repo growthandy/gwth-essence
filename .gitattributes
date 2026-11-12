@@ -1,0 +1,8 @@
+* text=auto
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.md text
+*.base text
+*.json text
+*.css text
+*.js text

@@ -15,8 +15,10 @@
 - `50.Wiki/CLAUDE.md` `50.Wiki/AGENTS.md` — 프론트매터 아래 출처·경로 기준 한 줄
 - `50.Wiki/Core Context.md` — 킷 placeholder 대신 `../0.Map_of_Contents/🏛 나.md` 포인터
 
+- `50.Wiki/20. Wiki/24. Maps/Explored 학습 보드.base` — `inFolder("…")`·`file("…")` 인자에 `50.Wiki/` 접두 (Bases 의 inFolder 는 볼트 루트 기준이라 접두 없이는 영구히 빈 표)
+
 ## 그대로인 것
-- 폴더 구조 · 템플릿 · `Explored 학습 보드.base`(킷의 `date created` 유지 — 사람 층의 `created` 와 다르지만 킷 안에서는 킷 규약) · `index.md` `log.md` placeholder · README · CHANGELOG
+- 폴더 구조 · 템플릿 · `Explored 학습 보드.base` 의 열·공식(킷의 `date created` 유지 — 경로 접두만 위에서 고침) · `index.md` `log.md` placeholder · README · CHANGELOG
 
 ## diff -rq 결과 (원본 vs 50.Wiki, 제외 폴더 빼고)
 - Files KIT/AGENTS.md and 50.Wiki/AGENTS.md differ

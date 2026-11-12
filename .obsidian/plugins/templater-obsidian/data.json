@@ -1,6 +1,6 @@
 {
   "templates_folder": "99.Meta/templates",
-  "trigger_on_file_creation": false,
+  "trigger_on_file_creation": true,
   "enable_system_commands": false,
   "user_scripts_folder": "",
   "enable_folder_templates": true,

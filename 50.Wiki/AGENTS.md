@@ -15,7 +15,7 @@ tags:
 status: active
 version: "1.13.0"
 ---
-> **출처**: 이 폴더는 [cmds-llm-wiki](https://github.com/johnfkoo951/cmds-llm-wiki) v1.13.0 (@YohanKoo, 커밋 9a4f6e2) 의 사본이다. GWTH Essence 볼트에서는 이 킷이 `50.Wiki/` 아래에 있고, 커맨드와 훅은 **볼트 루트** `.claude/` 에서 `50.Wiki/` 접두를 붙여 실행된다 (바뀐 곳은 `99.Meta/KIT-CHANGES.md`). Core Context 는 `../0.Map_of_Contents/🏛 나.md` 다. 이 파일 본문의 경로는 모두 `50.Wiki/` 기준으로 읽는다.
+> **출처**: 이 폴더는 [cmds-llm-wiki](https://github.com/johnfkoo951/cmds-llm-wiki) v1.13.0 (@YohanKoo, 커밋 9a4f6e2) 의 사본이다. GWTH Essence 볼트에서는 이 킷이 `50.Wiki/` 아래에 있고, 커맨드와 훅은 **볼트 루트** `.claude/` 에서 `50.Wiki/` 접두를 붙여 실행된다 (바뀐 곳은 `99.Meta/KIT-CHANGES.md`). Core Context 는 `../0.Map_of_Contents/🏛 나.md` 다. 이 파일 본문의 경로는 모두 `50.Wiki/` 기준으로 읽는다. **이 볼트에 적용되지 않는다**: §Cross-Agent Compatibility 의 `.codex/`·`.agents/` 미러 유지, §Agent Settings 정본과 점폴더 링크(symlink·`setup-agent-links.sh`) — 이 볼트는 symlink 를 두지 않고 커맨드·훅을 루트 `.claude/` 실파일로 둔다. `/onboard` 는 킷의 first-run 인터뷰가 아니라 루트의 프로파일 온보딩이다.
 
 
 # AGENTS.md — LLM Wiki Schema

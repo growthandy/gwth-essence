@@ -1,10 +1,13 @@
 # split-wiki.ps1 — 50.Wiki/ 를 독립 볼트로 떼어낸다 (Windows 용, split-wiki.sh 와 같은 동작).
 # Usage: powershell -ExecutionPolicy Bypass -File 99.Meta\scripts\split-wiki.ps1 C:\path\to\new-vault [-DryRun]
+# Windows PowerShell 5.1 의 기본 인코딩은 ANSI 라서 한글·이모지가 깨진다 — 읽기는 -Encoding UTF8, 쓰기는 BOM 없는 UTF8Encoding 으로 고정한다.
 param(
 	[Parameter(Mandatory = $true)][string]$Target,
 	[switch]$DryRun
 )
 $ErrorActionPreference = "Stop"
+$Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+function Write-Utf8([string]$Path, [string]$Text) { [System.IO.File]::WriteAllText($Path, $Text, $Utf8NoBom) }
 Set-Location (Join-Path $PSScriptRoot "..\..")
 
 if (-not (Test-Path "50.Wiki")) { Write-Error "50.Wiki/ not found — nothing to split"; exit 2 }
@@ -29,13 +32,14 @@ New-Item -ItemType Directory -Path (Join-Path $Target ".claude\hooks") -Force | 
 Copy-Item -Path "50.Wiki\*" -Destination $Target -Recurse -Force
 foreach ($c in $KitCmds) {
 	$src = ".claude\commands\$c.md"
-	if (Test-Path $src) { (Get-Content $src -Raw) -replace "50\.Wiki/", "" | Set-Content (Join-Path $Target ".claude\commands\$c.md") -NoNewline }
+	if (Test-Path $src) { Write-Utf8 (Join-Path $Target ".claude\commands\$c.md") ((Get-Content $src -Raw -Encoding UTF8) -replace "50\.Wiki/", "") }
 }
 Get-ChildItem ".claude\hooks\*.sh" | ForEach-Object {
-	(Get-Content $_.FullName -Raw) -replace "50\.Wiki/", "" | Set-Content (Join-Path $Target ".claude\hooks\$($_.Name)") -NoNewline
+	Write-Utf8 (Join-Path $Target ".claude\hooks\$($_.Name)") ((Get-Content $_.FullName -Raw -Encoding UTF8) -replace "50\.Wiki/", "")
 }
 Copy-Item ".claude\settings.json" (Join-Path $Target ".claude\settings.json")
-Add-Content (Join-Path $Target "Core Context.md") "`n## Mothership`n- 이 위키는 $VaultName 볼트에서 분리됐다. 자화상(Core Context 원본): [$VaultName · 🏛 나]($BackLink)"
+$cc = Join-Path $Target "Core Context.md"
+Write-Utf8 $cc ((Get-Content $cc -Raw -Encoding UTF8) + "`n## Mothership`n- 이 위키는 $VaultName 볼트에서 분리됐다. 자화상(Core Context 원본): [$VaultName · 🏛 나]($BackLink)`n")
 
 Write-Output "split done -> $Target"
 Write-Output "next: open $Target as a new vault, install plugins (Claudian, Advanced URI), then paste this into 0.Map_of_Contents/📖 위키.md:"

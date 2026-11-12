@@ -19,6 +19,7 @@ check_skeleton() {
 	[[ -f LICENSE ]] && ok "LICENSE" || fail "missing LICENSE"
 	[[ -f README.md ]] && ok "README.md" || fail "missing README.md"
 	[[ -f .gitignore ]] && grep -q 'workspace.json' .gitignore && ok ".gitignore ignores workspace.json" || fail ".gitignore missing workspace.json"
+	[[ -f .gitattributes ]] && grep -qE '^\*\.sh text eol=lf' .gitattributes && ok ".gitattributes forces LF for .sh" || fail ".gitattributes missing or lacks '*.sh text eol=lf'"
 }
 
 check_system_files() {
@@ -65,6 +66,8 @@ check_obsidian() {
 	local leak; leak=$(grep -ril 'Growth_Bridge\|영민\|/Users/young' .obsidian/snippets .obsidian/plugins/*/data.json .obsidian/*.json 2>/dev/null || true)
 	[[ -z "$leak" ]] && ok "no personal identifiers in .obsidian" || fail "personal identifiers: $leak"
 	grep -q '"bases"' .obsidian/core-plugins.json 2>/dev/null && ok "core bases on" || fail "core-plugins lacks bases"
+	grep -q '"daily-notes": false' .obsidian/core-plugins.json 2>/dev/null && [[ ! -f .obsidian/daily-notes.json ]] && ok "core daily-notes off (Periodic Notes owns dailies)" || fail "core daily-notes must be off and daily-notes.json absent"
+	grep -q '"trigger_on_file_creation": true' .obsidian/plugins/templater-obsidian/data.json 2>/dev/null && ok "templater triggers on file creation" || fail "templater trigger_on_file_creation must be true (folder templates depend on it)"
 	[[ -f 99.Meta/LICENSES.md ]] || { fail "missing 99.Meta/LICENSES.md"; return 0; }
 	for id in $PLUGIN_IDS Velocity cmds-llm-wiki; do grep -q "$id" 99.Meta/LICENSES.md && ok "license row $id" || fail "LICENSES.md lacks $id"; done
 	grep -qi 'TODO' 99.Meta/LICENSES.md && fail "LICENSES.md has TODO" || ok "LICENSES.md complete"
@@ -122,11 +125,17 @@ check_kit() {
 	python3 -I -m json.tool .claude/settings.json >/dev/null 2>&1 && grep -q '\\"$CLAUDE_PROJECT_DIR\\"/' .claude/settings.json && ok "settings.json hooks quoted" || fail "settings.json invalid or unquoted CLAUDE_PROJECT_DIR"
 	[[ -f 99.Meta/KIT-CHANGES.md ]] && ok "KIT-CHANGES.md" || fail "missing 99.Meta/KIT-CHANGES.md"
 	grep -q '🏛 나' "50.Wiki/Core Context.md" 2>/dev/null && ok "Core Context points to 🏛 나" || fail "50.Wiki/Core Context.md does not point to 🏛 나.md"
+	local b; for b in 50.Wiki/*/*/*.base 50.Wiki/*/*.base; do [[ -f "$b" ]] || continue
+		local bare; bare=$(grep -nE '(inFolder|file)\("(00\. Inbox|10\. Raw Sources|20\. Wiki|30\. Queries|40\. Paper Analyses)' "$b" || true)
+		[[ -z "$bare" ]] && ok "base $(basename "$b") paths prefixed" || fail "base $(basename "$b") has unprefixed paths: $(echo "$bare" | head -1)"
+	done
+	grep -q '적용되지 않는다' 50.Wiki/CLAUDE.md && grep -q '적용되지 않는다' 50.Wiki/AGENTS.md && ok "kit schema carries the not-applicable note" || fail "50.Wiki/CLAUDE.md|AGENTS.md lack the symlink/mirror not-applicable note"
 }
 
 check_split() {
 	[[ -f 99.Meta/scripts/split-wiki.sh ]] || { fail "missing split-wiki.sh"; return 0; }
 	[[ -f 99.Meta/scripts/split-wiki.ps1 ]] && [[ "$(grep -c 'Copy-Item' 99.Meta/scripts/split-wiki.ps1)" -ge 1 ]] && ok "split-wiki.ps1" || fail "split-wiki.ps1 missing or lacks Copy-Item"
+	grep -q 'UTF8Encoding' 99.Meta/scripts/split-wiki.ps1 2>/dev/null && grep -q 'Encoding UTF8' 99.Meta/scripts/split-wiki.ps1 && ok "split-wiki.ps1 reads/writes UTF-8" || fail "split-wiki.ps1 lacks explicit UTF-8 read/write"
 	grep -q '| 5 ' 99.Meta/rules/growth-path.md && grep -q '위성' 99.Meta/rules/growth-path.md && ok "growth-path table" || fail "growth-path.md lacks the 6-stage table"
 	local t; t="$(mktemp -d)/wiki-test"
 	if bash 99.Meta/scripts/split-wiki.sh "$t" >/dev/null 2>&1; then ok "split-wiki ran"; else fail "split-wiki failed"; return 0; fi
@@ -144,6 +153,7 @@ check_readme() {
 	[[ "$heads" == "이 볼트는|시작하기|왜 옵시디언을 쓰나요? — 온보딩 3문항|60분 걸어보기|준비된 사람용 — AI 층|플러그인과 테마|AI 없이 쓰는 프롬프트|출처|" ]] && ok "README sections" || fail "README sections wrong: $heads"
 	local missing=0 pth; while IFS= read -r pth; do [[ -e "$pth" ]] || { fail "README links to missing $pth"; missing=1; }; done < <(grep -oE '(99\.Meta/[^) `\]]+\.md|MANIFESTO\.md)' README.md | sort -u)
 	[[ $missing -eq 0 ]] && ok "README paths exist"
+	grep -q 'Ctrl+Shift+F' README.md && fail "README claims a Cmd/Ctrl+Shift+F Omnisearch hotkey that does not exist" || ok "README no bogus hotkey"
 	for kw in 'Things 2' 'Git for Windows' 'Smart Connections' 'cmds-llm-wiki' 'YohanKoo' 'git clone'; do grep -qF "$kw" README.md && ok "README has $kw" || fail "README lacks $kw"; done
 }
 

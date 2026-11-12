@@ -4,22 +4,22 @@ filters:
   and:
     - file.ext == "md"
     - or:
-        - file.inFolder("20. Wiki")
+        - file.inFolder("50.Wiki/20. Wiki")
         - and:
             - file.hasProperty("explored")
-            - file.inFolder("30. Queries") || file.inFolder("40. Paper Analyses")
+            - file.inFolder("50.Wiki/30. Queries") || file.inFolder("50.Wiki/40. Paper Analyses")
 formulas:
   read: explored == true
   state: if(explored == true, "✅ 읽음", "📖 안 읽음")
-  category: if(type == "moc", "6. 🗺️ 지도 (MOC)", if(type == "research-question", "4. ❓ 연구 질문", if(type == "persona", "5. 🎭 페르소나", if(type == "paper-hub", "7. 📄 논문 허브", if(type == "paper-analysis", "8. 🧩 논문 분석", if(type == "query-result" || type == "synthesis", "9. 💬 질의·합성", if(file.inFolder("20. Wiki/21. Concepts"), "1. 💡 개념", if(file.inFolder("20. Wiki/23. Guides"), "2. 🛠️ 가이드", if(file.inFolder("20. Wiki/22. Entities"), "3. 🏷️ 엔티티", "기타")))))))))
-  domains: '["LLM Wiki Guide", "Knowledge Management"].filter(file("20. Wiki/24. Maps/MOC-" + value + ".md").hasLink(file))'
+  category: if(type == "moc", "6. 🗺️ 지도 (MOC)", if(type == "research-question", "4. ❓ 연구 질문", if(type == "persona", "5. 🎭 페르소나", if(type == "paper-hub", "7. 📄 논문 허브", if(type == "paper-analysis", "8. 🧩 논문 분석", if(type == "query-result" || type == "synthesis", "9. 💬 질의·합성", if(file.inFolder("50.Wiki/20. Wiki/21. Concepts"), "1. 💡 개념", if(file.inFolder("50.Wiki/20. Wiki/23. Guides"), "2. 🛠️ 가이드", if(file.inFolder("50.Wiki/20. Wiki/22. Entities"), "3. 🏷️ 엔티티", "기타")))))))))
+  domains: '["LLM Wiki Guide", "Knowledge Management"].filter(file("50.Wiki/20. Wiki/24. Maps/MOC-" + value + ".md").hasLink(file))'
   domain: if(type == "moc", file.basename.replace("MOC-", ""), if(formula.domains.length > 0, formula.domains.slice(0, 1).join(""), "· MOC 미연결"))
   alsoIn: formula.domains.slice(1).join(", ")
   conf: if(confidence == "high", "●●●", if(confidence == "medium", "●●○", if(confidence == "low", "●○○", "—")))
   verify: if(disputed == true, "⚠️ 충돌", if(verificationStatus == "verified", "✔︎ 검증", if(verificationStatus == "partial", "◐ 부분", "○ 미검증")))
   links: if(related, list(related).length, 0)
   sources: if(source, list(source).length, 0)
-  mapNotes: file.links.map(value.asFile()).filter(value && value.inFolder("20. Wiki") && value.properties.type != "moc").unique()
+  mapNotes: file.links.map(value.asFile()).filter(value && value.inFolder("50.Wiki/20. Wiki") && value.properties.type != "moc").unique()
   mapRead: formula.mapNotes.filter(value.properties.explored == true).length
   mapProgress: if(formula.mapNotes.length > 0, formula.mapRead.toString() + " / " + formula.mapNotes.length.toString() + " (" + (formula.mapRead / formula.mapNotes.length * 100).round(0).toString() + "%)", "—")
 properties:
@@ -61,7 +61,7 @@ views:
     filters:
       and:
         - formula.read == false
-        - file.inFolder("20. Wiki")
+        - file.inFolder("50.Wiki/20. Wiki")
         - type != "moc"
     groupBy:
       property: formula.domain
@@ -106,7 +106,7 @@ views:
     filters:
       and:
         - formula.read == false
-        - file.inFolder("20. Wiki")
+        - file.inFolder("50.Wiki/20. Wiki")
         - or:
             - confidence == "high"
             - disputed == true
@@ -163,7 +163,7 @@ views:
     name: 📊 영역별 진행률
     filters:
       and:
-        - file.inFolder("20. Wiki")
+        - file.inFolder("50.Wiki/20. Wiki")
         - type != "moc"
     groupBy:
       property: formula.domain
@@ -252,7 +252,7 @@ views:
     filters:
       and:
         - formula.read == false
-        - file.inFolder("20. Wiki")
+        - file.inFolder("50.Wiki/20. Wiki")
         - type != "moc"
     groupBy:
       property: formula.domain
